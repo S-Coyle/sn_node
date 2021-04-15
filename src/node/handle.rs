@@ -11,12 +11,15 @@ use crate::{
     chunks::Chunks,
     event_mapping::MsgContext,
     node::{AdultRole, Role},
-    node_ops::{NodeDuties, NodeDuty, OutgoingMsg},
+    node_ops::{MsgType, NodeDuties, NodeDuty, OutgoingMsg},
     section_funds::{reward_stage::RewardStage, Credits, SectionFunds},
     Error, Node, Result,
 };
 use log::{debug, info};
-use sn_messaging::{client::ProcessMsg, node::NodeQuery, Aggregation, DstLocation, MessageId};
+use sn_messaging::{
+    node::{NodeMsg, NodeQuery},
+    Aggregation, DstLocation, MessageId,
+};
 use xor_name::XorName;
 
 impl Node {
@@ -254,13 +257,13 @@ impl Node {
                     Ok(ops)
                 } else {
                     Ok(vec![NodeDuty::Send(OutgoingMsg {
-                        msg: ProcessMsg::NodeQuery {
+                        msg: MsgType::Node(NodeMsg::NodeQuery {
                             query: NodeQuery::Chunks {
                                 query: read,
                                 origin,
                             },
                             id: msg_id,
-                        },
+                        }),
                         dst: DstLocation::Section(data_section_addr),
                         // TBD
                         section_source: false,
@@ -325,10 +328,10 @@ impl Node {
                     Ok(vec![elder.meta_data.read(query, id, origin).await?])
                 } else {
                     Ok(vec![NodeDuty::Send(OutgoingMsg {
-                        msg: ProcessMsg::NodeQuery {
+                        msg: MsgType::Node(NodeMsg::NodeQuery {
                             query: NodeQuery::Metadata { query, origin },
                             id,
-                        },
+                        }),
                         dst: DstLocation::Section(data_section_addr),
                         // TBD
                         section_source: false,

@@ -9,7 +9,7 @@
 use crate::{
     capacity::ChunkHolderDbs,
     error::convert_to_error_message,
-    node_ops::{NodeDuties, NodeDuty, OutgoingMsg},
+    node_ops::{MsgType, NodeDuties, NodeDuty, OutgoingMsg},
     to_db_key::ToDbKey,
     Error, Result,
 };
@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use sn_data_types::{Blob, BlobAddress, Error as DtError, PublicKey};
 use sn_messaging::{
     client::{BlobRead, BlobWrite, CmdError, Error as ErrorMessage, ProcessMsg, QueryResponse},
-    node::{NodeCmd, NodeQuery, NodeSystemCmd, NodeSystemQuery},
+    node::{NodeCmd, NodeMsg, NodeQuery, NodeSystemCmd, NodeSystemQuery},
     Aggregation, DstLocation, EndUser, MessageId,
 };
 
@@ -79,11 +79,11 @@ impl BlobRegister {
                 return Ok(NodeDuty::NoOp);
             } else {
                 return Ok(NodeDuty::Send(OutgoingMsg {
-                    msg: ProcessMsg::CmdError {
+                    msg: MsgType::Client(ProcessMsg::CmdError {
                         error: CmdError::Data(ErrorMessage::DataExists),
                         id: MessageId::in_response_to(&msg_id),
                         correlation_id: msg_id,
-                    },
+                    }),
                     section_source: false, // strictly this is not correct, but we don't expect responses to an error..
                     dst: DstLocation::EndUser(origin),
                     aggregation: Aggregation::AtDestination,
@@ -118,7 +118,7 @@ impl BlobRegister {
 
         Ok(NodeDuty::SendToNodes {
             targets: target_holders,
-            msg: ProcessMsg::NodeCmd {
+            msg: NodeMsg::NodeCmd {
                 cmd: NodeCmd::Chunks {
                     cmd: BlobWrite::New(data),
                     origin,
@@ -137,11 +137,11 @@ impl BlobRegister {
     ) -> Result<NodeDuty> {
         let message_error = convert_to_error_message(error)?;
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::CmdError {
+            msg: MsgType::Client(ProcessMsg::CmdError {
                 error: CmdError::Data(message_error),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to an error..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::AtDestination,
@@ -179,7 +179,7 @@ impl BlobRegister {
 
         if !results.is_empty() {}
 
-        let msg = ProcessMsg::NodeCmd {
+        let msg = NodeMsg::NodeCmd {
             cmd: NodeCmd::Chunks {
                 cmd: BlobWrite::DeletePrivate(address),
                 origin,
@@ -357,7 +357,7 @@ impl BlobRegister {
 
         Ok(NodeDuty::SendToNodes {
             targets: target_holders,
-            msg: ProcessMsg::NodeCmd {
+            msg: NodeMsg::NodeCmd {
                 cmd: NodeCmd::System(NodeSystemCmd::ReplicateChunk(data)),
                 id: msg_id,
             },
@@ -376,10 +376,10 @@ impl BlobRegister {
             .map(|holder| {
                 info!("Sending get-chunk query to holder {:?}", holder);
                 (
-                    ProcessMsg::NodeQuery {
+                    MsgType::Node(NodeMsg::NodeQuery {
                         query: NodeQuery::System(NodeSystemQuery::GetChunk(address)),
                         id: MessageId::combine(vec![*address.name(), holder]),
-                    },
+                    }),
                     holder,
                 )
             })
@@ -415,11 +415,11 @@ impl BlobRegister {
     ) -> Result<NodeDuty> {
         let query_error = |error: Error| async {
             let message_error = convert_to_error_message(error)?;
-            let err_msg = ProcessMsg::QueryResponse {
+            let err_msg = MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetBlob(Err(message_error)),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            };
+            });
             Ok(NodeDuty::Send(OutgoingMsg {
                 msg: err_msg,
                 section_source: false, // strictly this is not correct, but we don't expect responses to an error..
@@ -438,7 +438,7 @@ impl BlobRegister {
                 return query_error(Error::NetworkData(DtError::AccessDenied(*origin.id()))).await;
             }
         };
-        let msg = ProcessMsg::NodeQuery {
+        let msg = NodeMsg::NodeQuery {
             query: NodeQuery::Chunks {
                 query: BlobRead::Get(address),
                 origin,

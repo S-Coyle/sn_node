@@ -9,7 +9,7 @@
 use crate::{
     chunk_store::{SequenceChunkStore, UsedSpace},
     error::convert_to_error_message,
-    node_ops::{NodeDuty, OutgoingMsg},
+    node_ops::{MsgType, NodeDuty, OutgoingMsg},
     Error, Result,
 };
 use log::info;
@@ -102,11 +102,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequence(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -173,11 +173,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequenceRange(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -200,11 +200,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequenceLastEntry(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -232,11 +232,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequenceOwner(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -261,11 +261,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequenceUserPermissions(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -293,11 +293,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequencePublicPolicy(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -325,11 +325,11 @@ impl SequenceStorage {
             Err(error) => Err(convert_to_error_message(error)?),
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::QueryResponse {
+            msg: MsgType::Client(ProcessMsg::QueryResponse {
                 response: QueryResponse::GetSequencePrivatePolicy(result),
                 id: MessageId::in_response_to(&msg_id),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to a response..
             dst: DstLocation::EndUser(origin),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,
@@ -394,11 +394,11 @@ impl SequenceStorage {
             }
         };
         Ok(NodeDuty::Send(OutgoingMsg {
-            msg: ProcessMsg::CmdError {
+            msg: MsgType::Client(ProcessMsg::CmdError {
                 id: MessageId::in_response_to(&msg_id),
                 error: CmdError::Data(error),
                 correlation_id: msg_id,
-            },
+            }),
             section_source: false, // strictly this is not correct, but we don't expect responses to an error..
             dst: DstLocation::Section(origin.name()),
             aggregation: Aggregation::None, // TODO: to_be_aggregated: Aggregation::AtDestination,

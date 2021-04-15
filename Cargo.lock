@@ -1865,9 +1865,9 @@ dependencies = [
 
 [[package]]
 name = "rcgen"
-version = "0.8.9"
+version = "0.8.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5cb7a2dc0e5307189b6933a61290ff06b65b35bdcaae2b2c50a0c3e355cb118e"
+checksum = "4e80a701a04edd9cab874a3d59323bebe24c9a92dd602088c78da83732066d1b"
 dependencies = [
  "chrono",
  "pem",
@@ -2249,7 +2249,7 @@ dependencies = [
 [[package]]
 name = "sn_messaging"
 version = "14.0.0"
-source = "git+https://github.com/maidsafe/sn_messaging?branch=anti-entropy#5b446f416e90e99613250a2e4edaa0371287af84"
+source = "git+https://github.com/maidsafe/sn_messaging?branch=anti-entropy#b1956f18322fc4b5db4e47f01baad8c895a8b86e"
 dependencies = [
  "bincode",
  "bytes 1.0.1",
@@ -2317,7 +2317,7 @@ dependencies = [
 [[package]]
 name = "sn_routing"
 version = "0.60.3"
-source = "git+https://github.com/bochaco/sn_routing?branch=anti-entropy#3fb58cdbe850d6f415977ec13d4221fef805ffa1"
+source = "git+https://github.com/maidsafe/sn_routing?branch=anti-entropy#0cf3e1f19cd1ea5233e1435ae9151ceb450616de"
 dependencies = [
  "bincode",
  "bls_dkg",

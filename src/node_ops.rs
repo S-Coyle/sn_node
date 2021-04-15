@@ -14,6 +14,7 @@ use sn_data_types::{
 };
 use sn_messaging::{
     client::{BlobRead, BlobWrite, ProcessMsg, ProcessingError, SupportingInfo},
+    node::NodeMsg,
     Aggregation, DstLocation, EndUser, MessageId, SrcLocation,
 };
 use sn_routing::Prefix;
@@ -172,7 +173,7 @@ pub enum NodeDuty {
     SendSupport(OutgoingSupportingInfo),
     /// Send the same request to each individual node.
     SendToNodes {
-        msg: ProcessMsg,
+        msg: NodeMsg,
         targets: BTreeSet<XorName>,
         aggregation: Aggregation,
     },
@@ -278,10 +279,26 @@ impl Debug for NodeDuty {
 
 #[derive(Debug, Clone)]
 pub struct OutgoingMsg {
-    pub msg: ProcessMsg,
+    pub msg: MsgType,
     pub dst: DstLocation,
     pub section_source: bool,
     pub aggregation: Aggregation,
+}
+
+#[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)]
+pub enum MsgType {
+    Node(NodeMsg),
+    Client(ProcessMsg),
+}
+
+impl MsgType {
+    pub fn id(&self) -> MessageId {
+        match self {
+            Self::Node(msg) => msg.id(),
+            Self::Client(msg) => msg.id(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
